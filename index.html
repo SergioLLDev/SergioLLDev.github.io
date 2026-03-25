@@ -4,6 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sergio Laclaustra &mdash; Ingeniero de Software</title>
+  <meta name="description" content="Software Engineer especializado en Java y Spring Boot, con enfoque en Backend. Microservicios, APIs y sistemas financieros en produccion."/>
+  <meta property="og:title" content="Sergio Laclaustra - Ingeniero de Software"/>
+  <meta property="og:description" content="Software Engineer especializado en Java y Spring Boot, con enfoque en Backend. Microservicios, APIs y sistemas financieros en produccion."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:locale" content="es_ES"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:title" content="Sergio Laclaustra - Ingeniero de Software"/>
+  <meta name="twitter:description" content="Software Engineer especializado en Java y Spring Boot, con enfoque en Backend. Microservicios, APIs y sistemas financieros en produccion."/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"/>
   <style>
@@ -114,7 +122,8 @@
     .form-group input:focus,.form-group textarea:focus{border-color:var(--accent)}
     .form-group textarea{height:128px}
     .form-status{font-family:var(--mono);font-size:.72rem;padding:.6rem 1rem;border-radius:var(--radius);display:none}
-    .form-status.success{display:block;background:rgba(0,255,135,.07);color:var(--accent);border:1px solid rgba(0,255,135,.2)}
+    .form-status.success{background:rgba(0,255,135,.07);color:var(--accent);border:1px solid rgba(0,255,135,.2)}
+    .form-status.error{background:rgba(255,50,50,.07);color:#ff6b6b;border:1px solid rgba(255,50,50,.2)}
     .cursor{position:fixed;width:6px;height:6px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:1000;transform:translate(-50%,-50%)}
     @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
     .reveal{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease}
@@ -177,7 +186,7 @@
         <span class="available-badge">Disponible para nuevos proyectos</span>
       </div>
     </div>
-    <p class="home-desc">Software Engineer especializado en Java y Spring Boot, con enfoque actual en desarrollo Backend. Microservicios, APIs y sistemas financieros en producción.</p>
+    <p class="home-desc">Software Engineer especializado en Java y Spring Boot, con enfoque actual en desarrollo Backend. Microservicios, APIs y sistemas financieros en produccion.</p>
     <div class="home-actions">
       <a class="btn btn-primary" onclick="showSection('projects')"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h7m0 0v7m0-7L4 12"/></svg>Ver proyectos</a>
       <a class="btn btn-outline" onclick="showSection('cv')"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v8m0 0l-3-3m3 3l3-3"/><rect x="2" y="12" width="12" height="2" rx="1"/></svg>Ver CV</a>
@@ -388,12 +397,13 @@
       </div>
     </div>
     <div class="reveal reveal-delay-1">
-      <div class="contact-form">
+      <div class="contact-form" id="contactForm">
         <div class="form-group"><label>Nombre</label><input type="text" id="fname" placeholder="Tu nombre"/></div>
         <div class="form-group"><label>Email</label><input type="email" id="femail" placeholder="tu@email.com"/></div>
         <div class="form-group"><label>Mensaje</label><textarea id="fmessage" placeholder="Cuentame sobre tu proyecto..."></textarea></div>
-        <button class="btn btn-primary" onclick="sendForm()" style="align-self:flex-start;border:none">Enviar mensaje</button>
-        <div class="form-status" id="formStatus">Mensaje enviado. Sergio te respondera pronto.</div>
+        <button class="btn btn-primary" id="submitBtn" onclick="sendForm()" style="align-self:flex-start;border:none">Enviar mensaje</button>
+        <div class="form-status success" id="formStatus" style="display:none">&#10003; Mensaje enviado. Sergio te respondera pronto.</div>
+        <div class="form-status error" id="formError" style="display:none">&#10005; Algo salio mal. Intentalo de nuevo o escribeme directamente.</div>
       </div>
     </div>
   </div>
@@ -427,12 +437,37 @@ function sendForm(){
   var email=document.getElementById('femail').value.trim();
   var msg=document.getElementById('fmessage').value.trim();
   if(!name||!email||!msg)return;
-  var st=document.getElementById('formStatus');
-  st.classList.add('success');
-  document.getElementById('fname').value='';
-  document.getElementById('femail').value='';
-  document.getElementById('fmessage').value='';
-  setTimeout(function(){st.classList.remove('success');},6000);
+  var btn=document.getElementById('submitBtn');
+  btn.textContent='Enviando...';
+  btn.style.opacity='.7';
+  btn.style.pointerEvents='none';
+  document.getElementById('formStatus').style.display='none';
+  document.getElementById('formError').style.display='none';
+  fetch('https://formspree.io/f/mreozngv',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({name:name,email:email,message:msg})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.ok){
+      document.getElementById('formStatus').style.display='block';
+      document.getElementById('fname').value='';
+      document.getElementById('femail').value='';
+      document.getElementById('fmessage').value='';
+      setTimeout(function(){document.getElementById('formStatus').style.display='none';},6000);
+    } else {
+      document.getElementById('formError').style.display='block';
+    }
+  })
+  .catch(function(){
+    document.getElementById('formError').style.display='block';
+  })
+  .finally(function(){
+    btn.textContent='Enviar mensaje';
+    btn.style.opacity='1';
+    btn.style.pointerEvents='auto';
+  });
 }
 var cursor=document.getElementById('cursor');
 if(window.matchMedia('(pointer: fine)').matches){
